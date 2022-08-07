@@ -1,0 +1,22 @@
+CMakeFiles/mniam_player.dir/amcom.c.obj: \
+ C:\Users\Mariusz\Desktop\GIT_Repos\mniAM\Project_Files_For_Windows\mniam_player\amcom.c \
+ c:\tools\mingw\x86_64-w64-mingw32\include\string.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\crtdefs.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\corecrt.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\_mingw.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\_mingw_mac.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\_mingw_secapi.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\vadefs.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\sdks/_mingw_ddk.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\sec_api\string_s.h \
+ c:\tools\mingw\lib\gcc\x86_64-w64-mingw32\11.2.0\include\stdint.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\stdint.h \
+ c:\tools\mingw\lib\gcc\x86_64-w64-mingw32\11.2.0\include\stddef.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\stddef.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\stdio.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\corecrt_stdio_config.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\_mingw_off_t.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\swprintf.inl \
+ c:\tools\mingw\x86_64-w64-mingw32\include\sec_api\stdio_s.h \
+ C:\Users\Mariusz\Desktop\GIT_Repos\mniAM\Project_Files_For_Windows\mniam_player\amcom.h \
+ c:\tools\mingw\x86_64-w64-mingw32\include\assert.h

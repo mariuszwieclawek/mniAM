@@ -12,25 +12,8 @@
 
 #define DEFAULT_TCP_PORT 	"2001"
 
-int number_of_foods = 0;
-int number_of_players = 0;
-int my_player = 0;
-
-/*
-//testy
-uint16_t foodnumber = 6;
-uint8_t statyw = 0;
-float x = 340;
-float y = 240;
-*/
-
 uint8_t first_iter_food = 1;
-uint8_t first_iter_player = 1;
-AMCOM_NewGameRequestPayload newgameRequestPayload;
-AMCOM_PlayerUpdateRequestPayload playerupdateRequestPayload;
-AMCOM_FoodUpdateRequestPayload foodupdateRequestPayload;
-AMCOM_MoveRequestPayload moveRequestPayload;
-AMCOM_MoveResponsePayload moveResponsePayload;
+
 
 /**
  * This function will be called each time a valid AMCOM packet is received
@@ -51,20 +34,10 @@ void amcomPacketHandler(const AMCOM_Packet* packet, void* userContext) {
 	case AMCOM_NEW_GAME_REQUEST:
 		printf("Got NEW_GAME.request.\n");
 		// TODO: respond with NEW_GAME.confirmation
+		static AMCOM_NewGameRequestPayload newgameRequestPayload;
 
-		AMCOM_NewGameRequestPayload * ptr1 = packet->payload;
-        newgameRequestPayload.playerNumber = ptr1->playerNumber;
-        newgameRequestPayload.numberOfPlayers = ptr1->numberOfPlayers;
-        newgameRequestPayload.mapWidth = ptr1->mapWidth;
-        newgameRequestPayload.mapHeight = ptr1->mapHeight;
-		my_player = newgameRequestPayload.playerNumber;
-		
-		/*
-		printf("\nnumer gracza : %d\n",ptr1->playerNumber);
-		printf("liczba graczy : %d\n",ptr1->numberOfPlayers);
-		printf("szerokosc mapy : %f\n",ptr1->mapWidth);
-		printf("wysokosc mapy : %f\n",ptr1->mapHeight);
-		*/
+		memcpy(amcomBuf, packet->payload, sizeof(packet->payload));
+		newgameRequestPayload = *(AMCOM_NewGameRequestPayload*)amcomBuf;
 
 		bytesToSend = AMCOM_Serialize(AMCOM_NEW_GAME_RESPONSE, NULL, 0, amcomBuf);
 
@@ -72,126 +45,54 @@ void amcomPacketHandler(const AMCOM_Packet* packet, void* userContext) {
 	case AMCOM_PLAYER_UPDATE_REQUEST:
 		printf("Got PLAYER_UPDATE.request.\n");
 		// TODO: use the received information
+		static AMCOM_PlayerUpdateRequestPayload playerupdateRequestPayload;
 
-		AMCOM_PlayerUpdateRequestPayload * ptr2 = packet->payload;
+		memcpy(amcomBuf, packet->payload, sizeof(packet->payload));
+		playerupdateRequestPayload = *(AMCOM_PlayerUpdateRequestPayload*)amcomBuf;
 
-		/*testy
-		if(first_iter_player == 0 ){
-			printf("\ndodajemy gracza, rozmiar ramki co przyszla: %d\n",packet->header.length);
-			ptr2->playerState[1].playerNo = 1;
-			ptr2->playerState[1].hp = 2;
-			ptr2->playerState[1].x = x;
-			ptr2->playerState[1].y = y;
-			//hp++;
-			x--;
-			y--;
-		}
-		*/
-
-		if(first_iter_player == 1){
-			number_of_players = packet->header.length/11;
-			for(int i = 0; i < number_of_players; i++){
-				playerupdateRequestPayload.playerState[i].playerNo = ptr2->playerState[i].playerNo;
-				playerupdateRequestPayload.playerState[i].hp = ptr2->playerState[i].hp;
-				playerupdateRequestPayload.playerState[i].x = ptr2->playerState[i].x;
-				playerupdateRequestPayload.playerState[i].y = ptr2->playerState[i].y;
-			}
-			first_iter_player = 0;
-		}else{
-			for(int i = 0; i < packet->header.length/11; i++){ //the number of iterations is the number of incoming packets
-				for(int j = 0; j < number_of_players; j++){ // the number of iterations is the number of the current amount of players
-					if(playerupdateRequestPayload.playerState[j].playerNo == ptr2->playerState[i].playerNo){
-						//printf("\naktualizacja iteracja  i:%d j:%d\n", i,j);
-						playerupdateRequestPayload.playerState[j].playerNo = ptr2->playerState[i].playerNo;
-						playerupdateRequestPayload.playerState[j].hp = ptr2->playerState[i].hp;
-						playerupdateRequestPayload.playerState[j].x = ptr2->playerState[i].x;
-						playerupdateRequestPayload.playerState[j].y = ptr2->playerState[i].y;
-					}
-				}
-			}
-		}
-
-		for(int i = 0; i < number_of_players+1; i++){
-			printf("\nnumer gracza : %d\n",ptr2->playerState[i].playerNo);
-			printf("hp gracza : %d\n",ptr2->playerState[i].hp);
-			printf("pozycja X : %f\n",ptr2->playerState[i].x);
-			printf("pozycja Y : %f\n",ptr2->playerState[i].y);
-		}
-	
 	    break;
 	case AMCOM_FOOD_UPDATE_REQUEST:
 		printf("Got FOOD_UPDATE.request.\n");
 		// TODO: use the received information
 
-		AMCOM_FoodUpdateRequestPayload * ptr3 = packet->payload;
-
-		int actualization_food_counter = 0;
+		static AMCOM_FoodUpdateRequestPayload foodupdateRequestPayload;
+		static int number_of_foods = 0;
 		
-		/* testy
-		if(first_iter == 0 ){
-			printf("\ndodajemy jedzenie, rozmiar ramki co przyszla: %d\n",packet->header.length);
-			ptr3->foodState[1].foodNo = foodnumber;
-			ptr3->foodState[1].state = statyw;
-			ptr3->foodState[1].x = x;
-			ptr3->foodState[1].y = y;
-			foodnumber++;
-			x -= 50;
-			y -= 50;
-		}
-		*/
-		
-		if(first_iter_food == 1){
+		if(first_iter_food == 1){ // saving all foods
+			memcpy(amcomBuf, packet->payload, sizeof(packet->payload));
+			foodupdateRequestPayload = *(AMCOM_FoodUpdateRequestPayload*)amcomBuf;
 			number_of_foods = packet->header.length/11;
-			for(int i = 0; i < number_of_foods; i++){
-				foodupdateRequestPayload.foodState[i].foodNo = ptr3->foodState[i].foodNo;
-				foodupdateRequestPayload.foodState[i].state = ptr3->foodState[i].state;
-				foodupdateRequestPayload.foodState[i].x = ptr3->foodState[i].x;
-				foodupdateRequestPayload.foodState[i].y = ptr3->foodState[i].y;
-			}
 			first_iter_food = 0;
-		}else{
+		}else{ // update only incoming changes
+			memcpy(amcomBuf, packet->payload, sizeof(packet->payload));
+			AMCOM_FoodUpdateRequestPayload *buf = (AMCOM_FoodUpdateRequestPayload*)amcomBuf;
 			for(int i = 0; i < packet->header.length/11; i++){ //the number of iterations is the number of incoming packets
-				actualization_food_counter = 0;
 				for(int j = 0; j < number_of_foods; j++){ // the number of iterations is the number of the current amount of food
-					if(foodupdateRequestPayload.foodState[j].foodNo == ptr3->foodState[i].foodNo){
-						//printf("\naktualizacja iteracja  i:%d j:%d\n", i,j);
-						foodupdateRequestPayload.foodState[j].foodNo = ptr3->foodState[i].foodNo;
-						foodupdateRequestPayload.foodState[j].state = ptr3->foodState[i].state;
-						foodupdateRequestPayload.foodState[j].x = ptr3->foodState[i].x;
-						foodupdateRequestPayload.foodState[j].y = ptr3->foodState[i].y;
-						actualization_food_counter++; // when we update food, it means that it is not a new object and we will not have to add it in the next steps
+					if(foodupdateRequestPayload.foodState[j].foodNo == buf->foodState[i].foodNo){
+						foodupdateRequestPayload.foodState[j].foodNo = buf->foodState[i].foodNo;
+						foodupdateRequestPayload.foodState[j].state = buf->foodState[i].state;
+						foodupdateRequestPayload.foodState[j].x = buf->foodState[i].x;
+						foodupdateRequestPayload.foodState[j].y = buf->foodState[i].y;
 					}
 				}
-				if(actualization_food_counter == 0){ // when the package is not update we need to add it to the structure
-					//printf("\nudalo sie dodac jedzenie iteracja nr: %d\n", i);
-					foodupdateRequestPayload.foodState[number_of_foods].foodNo = ptr3->foodState[i].foodNo;
-					foodupdateRequestPayload.foodState[number_of_foods].state = ptr3->foodState[i].state;
-					foodupdateRequestPayload.foodState[number_of_foods].x = ptr3->foodState[i].x;
-					foodupdateRequestPayload.foodState[number_of_foods].y = ptr3->foodState[i].y;
-					number_of_foods++;
-				}
 			}
 		}
 
-		//printf("\nactualization_food_counter: %d\n",actualization_food_counter);
-		printf("ilosc jedzenia: %d\n",number_of_foods);
-
-		for(int i = 0; i<number_of_foods;i++){
-			printf("\nnumer jedzenia : %d\n",foodupdateRequestPayload.foodState[i].foodNo);
-			printf("stan jedzenia : %d\n",foodupdateRequestPayload.foodState[i].state);
-			printf("pozycja X : %f\n",foodupdateRequestPayload.foodState[i].x);
-			printf("pozycja Y : %f\n",foodupdateRequestPayload.foodState[i].y);
-		}
+		// for(int i = 0; i < number_of_foods; i++){
+		// 	printf("foodNO = %d, state = %d, x = %f, y = %f\n", foodupdateRequestPayload.foodState[i].foodNo,
+		// 	foodupdateRequestPayload.foodState[i].state, foodupdateRequestPayload.foodState[i].x, foodupdateRequestPayload.foodState[i].y);
+		// }
 
 		break;
 	case AMCOM_MOVE_REQUEST:
 		printf("Got MOVE.request.\n");
 		// TODO: respond with MOVE.confirmation
 
-		AMCOM_MoveRequestPayload * ptr4 = packet->payload;
+		static AMCOM_MoveRequestPayload moveRequestPayload;
+		static AMCOM_MoveResponsePayload moveResponsePayload;
 
-		moveRequestPayload.x = ptr4->x;
-		moveRequestPayload.y = ptr4->y;
+		memcpy(amcomBuf, packet->payload, sizeof(packet->payload));
+		moveRequestPayload = *(AMCOM_MoveRequestPayload*)amcomBuf;
 
 		/* Angle calculation and send AMCOM_MOVE_RESPONSE */
 		float temp_distance_between_food, min_distance_between_food = 1000.0; // start value 1000 because this is max distance of map
@@ -207,44 +108,30 @@ void amcomPacketHandler(const AMCOM_Packet* packet, void* userContext) {
 		/* Looking for the nearest distance between player and food */
 		for(int i = 0; i<number_of_foods; i++){
 			if(foodupdateRequestPayload.foodState[i].state != 0){
-				//printf("Weszlo:%d\n",i);
 				temp_distance_between_food = sqrtf(powf(foodupdateRequestPayload.foodState[i].x - moveRequestPayload.x,2) 
 										+ powf(foodupdateRequestPayload.foodState[i].y - moveRequestPayload.y,2));
-				//printf("	Iteracja nr:%d Odleglosc:%f\n",i,temp_distance_between_food);
 				if( (temp_distance_between_food < min_distance_between_food) && (temp_distance_between_food > 0) ){
-					//printf("		Nowy najmniejszy dystans w iteracji nr:%d Odleglosc:%f\n",i,temp_distance_between_food);
 					min_distance_between_food = temp_distance_between_food;
 					closest_point_x_food = foodupdateRequestPayload.foodState[i].x;
 					closest_point_y_food = foodupdateRequestPayload.foodState[i].y;
-				}else{
-					//printf("		Brak nowego najmniejszego dystansu w iteracji nr:%d\n",i);
 				}
-			}else{
-				//printf("Nie weszlo:%d\n",i);
 			}
 		}
 
 		/* Looking for the nearest distance between player and other player */
-		for(int i = 0; i<number_of_players; i++){
-			if( (playerupdateRequestPayload.playerState[my_player].hp - playerupdateRequestPayload.playerState[i].hp) >= 2 ){
-				//printf("Weszlo:%d\n",i);
+		for(int i = 0; i<newgameRequestPayload.numberOfPlayers; i++){
+			if( (playerupdateRequestPayload.playerState[newgameRequestPayload.playerNumber].hp - playerupdateRequestPayload.playerState[i].hp) >= 2 ){
 				temp_distance_between_player = sqrtf(powf(playerupdateRequestPayload.playerState[i].x - moveRequestPayload.x,2) 
 										+ powf(playerupdateRequestPayload.playerState[i].y - moveRequestPayload.y,2));
-				//printf("	Iteracja nr:%d Odleglosc:%f\n",i,temp_distance_between_food);
 				if( (temp_distance_between_player < min_distance_between_player) && (temp_distance_between_player > 0) ){
-					//printf("		Nowy najmniejszy dystans w iteracji nr:%d Odleglosc:%f\n",i,temp_distance_between_food);
 					min_distance_between_player = temp_distance_between_player;
 					closest_point_x_player = playerupdateRequestPayload.playerState[i].x;
 					closest_point_y_player = playerupdateRequestPayload.playerState[i].y;
-				}else{
-					//printf("		Brak nowego najmniejszego dystansu w iteracji nr:%d\n",i);
 				}
-			}else{
-				//printf("Nie weszlo:%d\n",i);
 			}
 		}
 
-		/*Check what is closer (food or player(with 2hp less than my_player) )*/
+		/*Check what is closer (food or player(with 2hp less than my player) )*/
 		if(min_distance_between_food < min_distance_between_player){
 			closest_point_x = closest_point_x_food;
 			closest_point_y = closest_point_y_food;
@@ -253,19 +140,10 @@ void amcomPacketHandler(const AMCOM_Packet* packet, void* userContext) {
 			closest_point_x = closest_point_x_player;
 			closest_point_y = closest_point_y_player;
 		}
-		
-
-		printf("\nMoje kordynaty: X:%f Y:%f\n", moveRequestPayload.x, moveRequestPayload.y);
-		printf("Min_Odl do jedzenia: %f X:%f Y:%f\n", min_distance_between_food, closest_point_x_food, closest_point_y_food);
-		printf("Min_Odl do gracza: %f X:%f Y:%f\n", min_distance_between_player, closest_point_x_player, closest_point_y_player);
-		printf("Najblizszy punkt do gracza/jedzenia: X:%f Y:%f\n", closest_point_x, closest_point_y);
 
 		angle = atan2f(closest_point_y - moveRequestPayload.y, closest_point_x - moveRequestPayload.x);
-
 		moveResponsePayload.angle = angle;
-		printf("Otrzymany kat: %f\n",angle);
-		Sleep(5);
-
+		printf("angle:%f\n", angle);
 		bytesToSend = AMCOM_Serialize(AMCOM_MOVE_RESPONSE, &moveResponsePayload, sizeof(moveResponsePayload), amcomBuf);
 
 		break;

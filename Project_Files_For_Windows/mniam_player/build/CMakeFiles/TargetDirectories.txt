@@ -1,0 +1,3 @@
+C:/Users/Mariusz/Desktop/GIT_Repos/mniAM/Project_Files_For_Windows/mniam_player/build/CMakeFiles/mniam_player.dir
+C:/Users/Mariusz/Desktop/GIT_Repos/mniAM/Project_Files_For_Windows/mniam_player/build/CMakeFiles/edit_cache.dir
+C:/Users/Mariusz/Desktop/GIT_Repos/mniAM/Project_Files_For_Windows/mniam_player/build/CMakeFiles/rebuild_cache.dir
