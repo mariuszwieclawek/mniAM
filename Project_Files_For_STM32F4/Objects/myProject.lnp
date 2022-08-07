@@ -1,0 +1,23 @@
+--cpu=Cortex-M4.fp.sp
+".\objects\main.o"
+".\objects\ring_buffer.o"
+".\objects\usart.o"
+".\objects\amcom.o"
+".\objects\retarget_io.o"
+".\objects\stm32f4xx_hal.o"
+".\objects\stm32f4xx_hal_cortex.o"
+".\objects\stm32f4xx_hal_dma.o"
+".\objects\stm32f4xx_hal_dma_ex.o"
+".\objects\stm32f4xx_hal_gpio.o"
+".\objects\stm32f4xx_hal_pwr.o"
+".\objects\stm32f4xx_hal_pwr_ex.o"
+".\objects\stm32f4xx_hal_rcc.o"
+".\objects\stm32f4xx_hal_rcc_ex.o"
+".\objects\stm32f4xx_hal_uart.o"
+".\objects\stm32f4xx_hal_usart.o"
+".\objects\startup_stm32f429xx.o"
+".\objects\system_stm32f4xx.o"
+--strict --scatter ".\Objects\myProject.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\myProject.map" -o .\Objects\myProject.axf
